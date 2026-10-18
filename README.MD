@@ -1,4 +1,4 @@
-# The Hypotenuse Compiler
+# The Iodine Compiler
 
 <p align="center">
   <img src="assets/logo.png" alt="i++ Logo"/>
@@ -6,7 +6,7 @@
 
 ## What is i++?
 
-Hypotenuse is the compiler for **i++ (i++)** — a new systems programming language born out of frustration with C's lack of features and C++'s overwhelming complexity.
+Iodine is the compiler for **i++ (i++)** — a new systems programming language born out of frustration with C's lack of features and C++'s overwhelming complexity.
 
 i++ compiles to **C + assembly**, uses **GCC and NASM**, and targets **Linux ELF x86_64** natively. It's C-compatible, kinda modern? And designed to be learnable.
 
@@ -41,16 +41,9 @@ The i++ compiler and standard library support multiple architectures:
 3. Run `make full-install`
 
 ```bash
-git clone https://github.com/setuser1/The-Hypotenuse-Compiler
-cd The-Hypotenuse-Compiler
+git clone https://github.com/setuser1/ipp
+cd ipp/
 make full-install
-```
-
-To build the compiler as a Linux x86_64 ELF binary from an ARM64 host, install Docker and run:
-
-```bash
-make build-x86_64-elf
-make full-install-x86_64-elf
 ```
 
 ### Using Apple's `container` CLI on macOS (ARM64)
@@ -73,7 +66,7 @@ Use `make container-build` to build the compiler using Apple's `container` CLI:
 make container-build
 ```
 
-This will create `hypotenuse-container` in the `dist/` directory.
+This will create `iodine-container` in the `dist/` directory.
 
 #### Running the Compiler
 
