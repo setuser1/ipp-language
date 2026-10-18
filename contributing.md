@@ -1,4 +1,4 @@
-# 🤝 Contributing to i++ and The Hypotenuse Compiler
+# 🤝 Contributing to i++ and The Iodine Compiler
 
 <p align="center">
   <img src="assets/logo.png" alt="i++ Logo" width="120"/>
@@ -58,7 +58,7 @@ Tests live in the `test/` directory. Add a test for any bug you fix or feature y
 ## 📦 Project Structure
 
 ```
-📁 The-Hypotenuse-Compiler/
+📁 ipp/
 ├── 📂 src/          ← compiler source (lexer, parser, structurer, main)
 ├── 📂 docs/         ← language and compiler documentation
 ├── 📂 test/         ← test files
