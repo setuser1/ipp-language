@@ -53,25 +53,41 @@ from parser import (
 class front:
     def __init__(self, ast, source_path=None):
         self.ast = ast
-        self.source_path = source_path  # path to source file for plib lookup
+        self.source_path = source_path  # path to source file
 
-        self._is_plib_source = source_path and source_path.endswith(".plib")  # Direct plib compilation
-        self._pending_plibs = []  # Store pending plib ASTs for tree-shaking
-
+        self._alias_to_lib = {}  # Maps alias (e.g., "lib") -> actual lib name (e.g., "mylib")
+        self.namespace_imports = set()
         self._specific_imports = {}  # item -> (lib_name, namespace)
         self._scoped_var_imports = {}  # imported name -> (owner, symbol, generated name)
-        self._current_alias = {}  # lib_name -> alias
-        self._alias_to_lib = {}  # Maps alias (e.g., "lib") -> actual lib name (e.g., "mylib")
-        self._folder_libs = {}  # Maps folder alias -> list of plib names (e.g., "lib" -> ["iodine/streamer", "iodine/other"])
-        self._namespace_imported_libs = set()  # Track libs imported as full namespaces
-        self._standard_libs = set()  # Plib filenames loaded from the standard library folder
 
         self._exposed_libs = set()  # Set of exposed library names
         self._exposed_funcs = {}  # Maps bare_name -> lib_name for exposed functions
-        self._space_prefix_map = {}  # Maps space name -> actual prefix (e.g., "math" -> "lib_math")
-        self._top_level_lib_functions = {}  # Maps lib_name -> set of top-level function names
 
-        self._used_functions = set()  # Track used function names for tree-shaking
+        self.plib_track = {}
+
+def process(self, structor=None):
+        self.structor = structor
+
+        # 1. Track all import stuff
+        self.track_imports()
+
+        # 2. Validate expose rules against the tracked imports
+        self.validate_exposes()
+
+        # 3. Seed the usage graph from the main AST
+        self.scan_main_dependencies(self.ast)
+
+        # Handoff payload for mid.py (or the linker)
+        return {
+            "main_ast": self.ast,
+            "tracked_plibs": self.tracked_plibs,
+            "alias_to_lib": self.alias_to_lib,
+            "specific_imports": self.specific_imports,
+            "exposed_libs": self.exposed_libs,
+            "exposed_funcs": self.exposed_funcs,
+            "used_in_main": self.used_in_main
+        }
+
 
 """
 higher.py should only track libraries, mid.py will be the one handling them.
