@@ -41,8 +41,8 @@ The i++ compiler and standard library support multiple architectures:
 3. Run `make full-install`
 
 ```bash
-git clone https://github.com/setuser1/ipp
-cd ipp/
+git clone https://github.com/setuser1/ipp-language
+cd ipp-language/
 make full-install
 ```
 
