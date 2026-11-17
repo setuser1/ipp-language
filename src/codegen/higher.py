@@ -74,7 +74,7 @@ def process(self, structor=None):
         #Seed the usage graph from the main AST
         self.scan_main_dependencies(self.ast)
 
-        #Handoff payload for mid.py
+        # Handoff payload for mid.py
         return {
             "main_ast": self.ast,
             "tracked_plibs": self.tracked_plibs,

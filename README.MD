@@ -6,7 +6,7 @@
 
 ## What is i++?
 
-Iodine is the compiler for **i++ (i++)** — a new systems programming language born out of frustration with C's lack of features and C++'s overwhelming complexity.
+j++ is the compiler for **i++ (i++)** — a new systems programming language born out of frustration with C's lack of features and C++'s overwhelming complexity.
 
 i++ compiles to **C + assembly**, uses **GCC and NASM**, and targets **Linux ELF x86_64** natively. It's C-compatible, kinda modern? And designed to be learnable.
 
@@ -66,7 +66,7 @@ Use `make container-build` to build the compiler using Apple's `container` CLI:
 make container-build
 ```
 
-This will create `iodine-container` in the `dist/` directory.
+This will create `jpp-container` in the `dist/` directory.
 
 #### Running the Compiler
 
