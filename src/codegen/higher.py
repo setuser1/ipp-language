@@ -14,6 +14,24 @@ import sys
 import error_msgs
 import parser
 
+'''
+from llvmlite import binding, ir
+
+#IRModule is responsible to make it possible to lower into midlevel.py
+class IRModule:
+    def __init__(self, source_path=None, name="module", target_triple=""):
+        self.source_path = source_path #record the source path for the module
+        self.module = ir.Module(name=name) ##LLVM Module
+        if target_triple: #Optionally set the target triple if provided, tells the LLVM what architecture to target
+            self.module.triple = target_triple
+
+        self.functions = {} #for function lookup
+        self.metadata = {} 
+
+    def add_function(self, name, return_type, parameter_types, parameter_names=()): #gives a clear way to declare a function in the module
+        if name in self.module.globals: #makes sure that the module avoids duplicate function names, which would cause issues in the LLVM IR
+            raise ValueError(f"duplicate LLVM symbol: {name}")
+'''
 
 class IRModule:
     """Template for the lowering handoff payload passed into mid/IR stages."""
