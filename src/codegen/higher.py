@@ -8,59 +8,59 @@ parser module instead so the lowering handoff can inspect generic AST nodes in a
 future-proof way without hard-coding every node type here.
 """
 
-import os
-import sys
-
 import error_msgs
 import parser
 
-'''
-from llvmlite import binding, ir
+from llvmlite import ir
 
-#IRModule is responsible to make it possible to lower into midlevel.py
+
 class IRModule:
+    """LLVM module and symbol table for the lowering pipeline."""
+
     def __init__(self, source_path=None, name="module", target_triple=""):
-        self.source_path = source_path #record the source path for the module
-        self.module = ir.Module(name=name) ##LLVM Module
-        if target_triple: #Optionally set the target triple if provided, tells the LLVM what architecture to target
+        self.source_path = source_path
+        self.module = ir.Module(name=name)
+        if target_triple:
             self.module.triple = target_triple
 
-        self.functions = {} #for function lookup
-        self.metadata = {} 
-
-    def add_function(self, name, return_type, parameter_types, parameter_names=()): #gives a clear way to declare a function in the module
-        if name in self.module.globals: #makes sure that the module avoids duplicate function names, which would cause issues in the LLVM IR
-            raise ValueError(f"duplicate LLVM symbol: {name}")
-'''
-
-class IRModule:
-    """Template for the lowering handoff payload passed into mid/IR stages."""
-
-    def __init__(self, source_path=None):
-        self.source_path = source_path
         self.imports = []
-        self.functions = []
+        self.functions = {}
         self.declarations = []
         self.globals = []
         self.metadata = {}
 
-    def add_function(self, function_node):
-        self.functions.append({
-            "kind": "function",
-            "name": getattr(function_node, "name", None),
-            "ret_type": getattr(function_node, "ret_type", None),
-            "params": getattr(function_node, "params", []),
-        })
+    def add_function(self, name, return_type, parameter_types, parameter_names=()):
+        """Declare a function in the LLVM module and return its LLVM value."""
+        if name in self.module.globals:
+            raise ValueError(f"duplicate LLVM symbol: {name}")
+        if parameter_names and len(parameter_names) != len(parameter_types):
+            raise ValueError("parameter_names must match parameter_types")
+
+        function_type = ir.FunctionType(return_type, parameter_types)
+        function = ir.Function(self.module, function_type, name=name)
+        for argument, parameter_name in zip(function.args, parameter_names):
+            argument.name = parameter_name
+        self.functions[name] = function
+        return function
 
     def to_dict(self):
         return {
             "kind": "module",
             "source_path": self.source_path,
             "imports": self.imports,
-            "functions": self.functions,
+            "functions": [
+                {
+                    "kind": "function",
+                    "name": name,
+                    "signature": str(function.function_type),
+                    "params": [argument.name for argument in function.args],
+                }
+                for name, function in self.functions.items()
+            ],
             "declarations": self.declarations,
             "globals": self.globals,
             "metadata": self.metadata,
+            "llvm_ir": str(self.module),
         }
 
 
@@ -145,13 +145,21 @@ class front:
             return None
 
         if isinstance(node, parser.Function):
+            parameter_types = [
+                self._llvm_type(parameter_type) for parameter_type, _ in node.params
+            ]
+            self.ir_module.add_function(
+                node.name,
+                self._llvm_type(node.ret_type),
+                parameter_types,
+                [parameter_name for _, parameter_name in node.params],
+            )
             lowered = {
                 "kind": "function",
                 "name": node.name,
                 "ret_type": node.ret_type,
                 "params": node.params,
             }
-            self.ir_module.add_function(node)
             return lowered
 
         if isinstance(node, parser.Declaration):
@@ -181,6 +189,31 @@ class front:
             return {"kind": "compound", "stmt_count": len(node.stmts)}
 
         return {"kind": node.__class__.__name__.lower()}
+
+    @staticmethod
+    def _llvm_type(type_name):
+        """Map the currently supported C scalar types to LLVM types."""
+        type_name = " ".join(type_name.split())
+        if type_name.endswith("*"):
+            return ir.PointerType()
+
+        llvm_types = {
+            "void": ir.VoidType(),
+            "char": ir.IntType(8),
+            "short": ir.IntType(16),
+            "int": ir.IntType(32),
+            "unsigned": ir.IntType(32),
+            "unsigned int": ir.IntType(32),
+            "long": ir.IntType(64),
+            "unsigned long": ir.IntType(64),
+            "float": ir.FloatType(),
+            "double": ir.DoubleType(),
+            "string": ir.PointerType(),
+        }
+        try:
+            return llvm_types[type_name]
+        except KeyError as exc:
+            raise ValueError(f"unsupported LLVM type: {type_name}") from exc
 
     def lower_to_ir(self):
         """Begin lowering the parsed AST into an IR-style payload while retaining metadata."""

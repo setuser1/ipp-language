@@ -12,7 +12,7 @@ X86_64_ELF_PLATFORM ?= linux/amd64
 # install: install Python dependencies needed to build and lint
 # ---------------------------------------------------------------
 install:
-	pip install --quiet pyflakes pyinstaller
+	pip install --quiet pyflakes pyinstaller llvmlite
 
 # ---------------------------------------------------------------
 # run: compile the canonical example file and print the object graph
@@ -23,7 +23,8 @@ run: install
 # ---------------------------------------------------------------
 # test: compile eleven focused cases locally (not run by GitHub Actions)
 # ---------------------------------------------------------------
-test:
+test: install
+	PYTHONPATH=src/codegen:src python3 -m unittest discover -s test -p 'test_*.py'
 	@set -e; \
 	for source in \
 		test/baseline.ix \
@@ -46,7 +47,7 @@ test:
 # lint: catch syntax errors and undefined names across all source files
 # ---------------------------------------------------------------
 lint:
-	python3 -m pyflakes src/lexer.py src/parser.py src/structure.py src/codegen.py src/assembler.py src/main.py
+	python3 -m pyflakes src/lexer.py src/parser.py src/structure.py src/codegen.py src/codegen/higher.py src/assembler.py src/main.py test/test_ir_module.py
 
 
 # ---------------------------------------------------------------
